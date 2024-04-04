@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using System.Linq;
 using BagoumLib;
 using BagoumLib.Cancellation;
+using BagoumLib.Functional;
 using BagoumLib.Mathematics;
 using BagoumLib.Tasks;
 using Danmokou.Behavior;
@@ -101,15 +102,28 @@ public class PatternSM : SequentialSM, EnvFrameAttacher {
             (subbosses, subsummons) = ConfigureAllBosses(ui, jsmh, Props.boss, Props.bosses);
         }
         bool firstBoss = true;
+        AudioTrackSet? trackset = null;
         try {
-
             for (var next = jsmh.Exec.phaseController.GoToNextPhase(); 
                     next > -1 && next < Phases.Length; 
                     next = jsmh.Exec.phaseController.GoToNextPhase(next + 1)) {
                 if (Phases[next].props.skip)
                     continue;
                 jsmh.ThrowIfCancelled();
-                ServiceLocator.Find<IAudioTrackService>().InvokeBGM(Props.bgms?.GetBounded(next, null));
+                if (Props.bgms is {} bgms && bgms.GetAtPriority(next).Try(out var tracks)) {
+                    var pi = jsmh.GCX.DeriveFCTX();
+                    AudioTrackSet? ntrackset = null;
+                    if (tracks.Length == 1)
+                        ntrackset = ServiceLocator.Find<IAudioTrackService>().FindTrackset(tracks[0].track);
+                    ntrackset ??= ServiceLocator.Find<IAudioTrackService>().AddTrackset(null, pi);
+                    if (ntrackset != trackset) {
+                        trackset?.FadeOut(null, AudioTrackState.DestroyReady);
+                        trackset = ntrackset;
+                    }
+                    foreach (var (t, vol) in tracks) {
+                        trackset.AddTrack(t)?.SetLocalVolume(vol);
+                    }
+                }
                 if (Props.boss != null && next >= Props.setUIFrom) {
                     SetUniqueBossUI(ui, firstBoss, jsmh,
                         Props.bosses == null ?

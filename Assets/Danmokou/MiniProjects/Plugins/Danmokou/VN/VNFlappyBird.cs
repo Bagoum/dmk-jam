@@ -133,7 +133,8 @@ public static class VNFlappyBird {
             t.ESayC("surprise", "You don't know who Reimu is?!"),
             new LazyAction(() => ServiceLocator.Find<IAudioTrackService>().ClearRunningBGM()),
             t.ESayC("angry", "Only someone in cahoots with Reimu could possibly tell that flagrant a lie!"),
-            new LazyAction(() => ServiceLocator.Find<IAudioTrackService>().InvokeBGM("fb.tokiko", new(1f, 0.01f))),
+            new LazyAction(() => ServiceLocator.Find<IAudioTrackService>()
+                .AddTrackset(new(1f, 0.01f)).AddTrack("fb.tokiko")),
             t.ESayC("smug", "As they say, the early bird gets the worm. If you won't reveal your intentions, then I'll just have to attack first!")
         );
         await vn.DefaultRenderGroup.FadeTo(0, 0.4f);

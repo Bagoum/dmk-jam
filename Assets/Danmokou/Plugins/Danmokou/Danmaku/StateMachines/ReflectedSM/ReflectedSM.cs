@@ -108,10 +108,10 @@ t > fadein ?
         anim.AssignScales(0, scale(smh.GCX), 0);
         anim.AssignRatios(t1r?.Invoke(smh.GCX), t2r?.Invoke(smh.GCX));
         anim.Initialize(smh.cT, t);
-        using var token = ServiceLocator.FindAll<PlayerController>().SelectDisposable(p => {
-            p.MakeInvulnerable((int)(t * 120), false);
-            return p.DisableInput();
-        });
+        using var token = PlayerController.AllControlEnabled.AddConst(false);
+        foreach (var pc in ServiceLocator.FindAll<PlayerController>()) {
+            pc.MakeInvulnerable((int)(t * 120), false);
+        };
         await RUWaitingUtils.WaitFor(smh.Exec, smh.cT, t, false);
     });
 
@@ -306,8 +306,9 @@ t > fadein ?
     /// <param name="scriptId">Description of the script used when printing debug messages.</param>
     /// <returns></returns>
     public static ReflectableLASM ExecuteVN([LookupMethod] Func<DMKVNState, Task> vnTask, string scriptId) => new(async smh => {
-        using var _ = ServiceLocator.FindAll<PlayerController>()
-            .SelectDisposable(p => p.DisableInput(true));
+        using var _ = PlayerController.AllControlEnabled.AddConst(false);
+        foreach (var pc in ServiceLocator.FindAll<PlayerController>())
+            pc.ResetInput();
         var vn = new DMKVNState(smh.cT, scriptId, GameManagement.Instance.VNData);
         var exec = ServiceLocator.Find<IVNWrapper>().TrackVN(vn);
         Logs.Log($"Starting VN script {vn}");

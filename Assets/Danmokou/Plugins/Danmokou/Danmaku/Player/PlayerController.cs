@@ -51,7 +51,7 @@ public partial class PlayerController : BehaviorEntity,
     public ShipConfig[] defaultPlayers = null!;
     public ShotConfig[] defaultShots = null!;
     public Subshot defaultSubshot;
-    public AbilityCfg defaultSupport = null!;
+    public AbilityCfg[] defaultSupports = null!;
 
 
     public float MaxCollisionRadius => Ship.grazeboxRadius;
@@ -94,7 +94,8 @@ public partial class PlayerController : BehaviorEntity,
     #region PrivateState
     public DisturbedAnd FiringEnabled { get; } = new();
     public DisturbedAnd BombsEnabled { get; } = new();
-    private DisturbedAnd AllControlEnabled { get; } = new();
+    public static DisturbedAnd AllControlEnabled { get; } = new();
+    public static OverrideEvented<(BulletManager.StyleSelector sel, bool exclude)?> CollisionsForPool { get; } = new(null);
 
     private ushort shotItr = 0;
     [UsedImplicitly]
@@ -127,7 +128,10 @@ public partial class PlayerController : BehaviorEntity,
     /// True iff bullet collisions can occur against the player. This is only false when the player is in the RESPAWN
     ///  state (ie. has an indeterminate position).
     /// </summary>
-    public bool ReceivesBulletCollisions => State != PlayerState.RESPAWN;
+    public bool ReceivesBulletCollisions(string? style) =>
+        State != PlayerState.RESPAWN &&
+            (style is null || CollisionsForPool.Value is not {} coll ||
+             coll.sel.Matches(style) != coll.exclude);
 
     /// <summary>
     /// True iff obstacle collisions can occur against the player.
@@ -218,8 +222,10 @@ public partial class PlayerController : BehaviorEntity,
     protected override void Awake() {
         base.Awake();
         obstacleCollisionLayer = LayerMask.NameToLayer("Wall");
-        Team = GameManagement.Instance.GetOrSetTeam(new ActiveTeamConfig(new TeamConfig(0, defaultSubshot, defaultSupport, 
-            defaultPlayers.Zip(defaultShots, (x, y) => (x, y)).ToArray())));
+        var dfltTeams = new (ShipConfig, ShotConfig, IAbilityCfg?)[defaultPlayers.Length];
+        for (int ii = 0; ii < defaultPlayers.Length; ++ii)
+            dfltTeams[ii] = (defaultPlayers[ii], defaultShots.ModIndex(ii), defaultSupports?.ModIndex(ii));
+        Team = GameManagement.Instance.GetOrSetTeam(new ActiveTeamConfig(new TeamConfig(0, defaultSubshot, dfltTeams)));
         Logs.Log($"Team awake", level: LogLevel.DEBUG1);
         hitboxSprite.enabled = SaveData.s.UnfocusedHitbox;
         meter.enabled = false;
@@ -235,7 +241,7 @@ public partial class PlayerController : BehaviorEntity,
                 fo.Preload();
             }
         }
-        foreach (var (_, s) in Team.Ships) {
+        foreach (var (_, s, _) in Team.Ships) {
             if (s.isMultiShot) {
                 foreach (var ss in s.Subshots!)
                     Preload(ss.prefab);
@@ -245,7 +251,7 @@ public partial class PlayerController : BehaviorEntity,
         meterPB.SetFloat(PropConsts.innerFillRatio, (float)Instance.MeterF.MeterUseThreshold);
         UpdatePB();
         
-        _UpdateTeam();
+        RealizeTeam();
         
         RunNextState(PlayerState.NORMAL);
         
@@ -291,15 +297,15 @@ public partial class PlayerController : BehaviorEntity,
         }
         if (didUpdate || force) {
             Logs.Log("Updating team");
-            _UpdateTeam();
+            RealizeTeam();
             Instance.TeamUpdated.OnNext(default);
         }
     }
-    public void UpdateTeam((ShipConfig, ShotConfig)? nplayer = null, Subshot? nsubshot = null, bool force=false) {
+    public void UpdateTeam((ShipConfig, ShotConfig, IAbilityCfg?)? nplayer = null, Subshot? nsubshot = null, bool force=false) {
         int? pind = nplayer.Try(out var p) ? (int?)Team.Ships.IndexOf(x => x == p) : null;
         UpdateTeam(pind, nsubshot, force);
     }
-    private void _UpdateTeam() {
+    private void RealizeTeam() {
         if (Team.Ship != Ship) {
             bool fromNull = Ship == null;
             Ship = Team.Ship;
@@ -586,12 +592,8 @@ public partial class PlayerController : BehaviorEntity,
         scoreLabelBuffer = ITEM_LABEL_BUFFER;
         scoreLabelBonus |= bonus;
     }
-
-    public IDisposable DisableInput(bool resetInputInControl = false) {
-        if (resetInputInControl)
-            InputInControl = InputInControlMethod.NONE_SINCE_LONGPAUSE;
-        return AllControlEnabled.AddConst(false);
-    }
+    
+    public void ResetInput() => InputInControl = InputInControlMethod.NONE_SINCE_LONGPAUSE;
     
     public GameObject InvokeParentedTimedEffect(EffectStrategy effect, float time) {
         var v = tr.position;

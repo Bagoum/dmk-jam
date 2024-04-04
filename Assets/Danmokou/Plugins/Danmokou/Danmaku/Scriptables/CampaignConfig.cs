@@ -86,8 +86,7 @@ public class CampaignConfig : BaseCampaignConfig {
         if (players[0].shots2.Length != 1 || players[0].supports.Length != 1) return false;
         if (players[0].shots2[0].shot.isMultiShot) return false;
         team = new(0, Subshot.TYPE_D,
-            players[0].supports[0].ability,
-            (players[0], players[0].shots2[0].shot));
+            (players[0], players[0].shots2[0].shot, players[0].supports[0].ability));
         return true;
     }
 

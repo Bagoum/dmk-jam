@@ -1,0 +1,53 @@
+
+var data = cfeature<THJam13CustomDataFeature>();
+
+pattern({ mixer {
+		(1, { 
+			("thj13.stage_retro", BPY(data.RetroMode01))
+			("thj13.stage_modern", BPY(1-data.RetroMode01))
+		})
+	} }, {
+	phase 0 { } {
+		paction 0 {
+			shiftphaseto 1
+		}
+	}
+	phase 30 { stage } {
+		paction 0 {
+			print("stage1")
+			sync("", <>, color "mfairy" summonr( none(cx(9)), 
+				movewrap_(300, 1.5, pxy(2, 2), 4, gox(9),
+					paction 0 {
+						async "gcircle-teal/w" <> gcr3 (120 / dl) inf <> {
+							delay(lerpd(60, 0))
+							sfx "x-bubble"
+						} gsr { target ang Lplayer } s tprot px(lerp01(data.RetroMode01Smooth, 4, 1))
+					}),
+				//retroMode01 == 0 in "modern" mode
+				// this fairy only receives damage in modern mode
+				{ hp 1000, receivedamage(1-data.RetroMode01) }))
+			sync("", <>, color "rbake" summonr(none(cx(-9)), 
+				movewrap_(300, 1.5, pxy(-2, 2), 4, gox(-9),
+					paction 0 {
+						async "gcircle-black/w" <> gcr3 (120 / dl) inf <> {
+							delay(lerpd(60, 0))
+							sfx "x-bubble"
+						} gsr { target ang Lplayer } s tprot px(lerp01(data.RetroMode01Smooth, 1, 4))
+					}),
+				{ hp 1000, receivedamage(data.RetroMode01) }))
+		}
+	}
+	phase 40 { stage } {
+		paction 0 {
+			async "ellipse-red/w" <-90> gcr2 1 inf <> {
+			} s rvelocity cx 2
+			async "" <> gcr2 120 inf <> {
+			} valueitem
+		}
+	}
+	phase 50 { stage } {
+		paction 0 {
+			print("stage3")
+		}
+	}
+})

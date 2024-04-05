@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4f64d4a00c194018afbe5db3323da211, type: 3}
-  m_Name: THJ13 Campaign BOSS NOT SET
+  m_Name: THJ13 Campaign
   m_EditorClassIdentifier: 
   key: thj13
   shortTitle: THJ13
@@ -19,7 +19,10 @@ MonoBehaviour:
   startLives: 3
   players:
   - {fileID: 11400000, guid: 2837e4ddce10a134ebcede695c842b92, type: 2}
+  - {fileID: 11400000, guid: e0671fcda14610e4d9f45e930404aa43, type: 2}
   stages:
   - {fileID: 11400000, guid: 1c05cc80f3b91ad44874b6bbe352b96f, type: 2}
-  bosses: []
+  bosses:
+  - {fileID: 11400000, guid: a7c62158d3b71d248b2a38fe28612ac0, type: 2}
+  - {fileID: 11400000, guid: a595638ff4cbf5e41bbebf6ca6cc4a42, type: 2}
   endings: []

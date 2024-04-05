@@ -1,5 +1,5 @@
 
-var data = cfeature<THJam13CustomDataFeature>();
+const var data = cfeature<THJam13CustomDataFeature>();
 
 pattern({ mixer {
 		(1, { 
@@ -15,10 +15,12 @@ pattern({ mixer {
 	phase 30 { stage } {
 		paction 0 {
 			print("stage1")
+			poolcontrol "*black*" tint rgba(1, 1, 1, lerp01(data.RetroMode01Smooth, 0.4, 1))
+			poolcontrol { "*purple*", "*teal*", "*green*", "*orange*", "*yellow*", "*red*", "*pink*", "*blue*" } tint rgba(1, 1, 1, lerp01(cfeature<THJam13CustomDataFeature>().RetroMode01Smooth, 1, 0.4))
 			sync("", <>, color "mfairy" summonr( none(cx(9)), 
 				movewrap_(300, 1.5, pxy(2, 2), 4, gox(9),
 					paction 0 {
-						async "gcircle-teal/w" <> gcr3 (120 / dl) inf <> {
+						async "dcircle-teal/w" <> gcr3 (120 / dl) inf <> {
 							delay(lerpd(60, 0))
 							sfx "x-bubble"
 						} gsr { target ang Lplayer } s tprot px(lerp01(data.RetroMode01Smooth, 4, 1))
@@ -29,7 +31,7 @@ pattern({ mixer {
 			sync("", <>, color "rbake" summonr(none(cx(-9)), 
 				movewrap_(300, 1.5, pxy(-2, 2), 4, gox(-9),
 					paction 0 {
-						async "gcircle-black/w" <> gcr3 (120 / dl) inf <> {
+						async "flasharrow-black/w" <> gcr3 (120 / dl) inf <> {
 							delay(lerpd(60, 0))
 							sfx "x-bubble"
 						} gsr { target ang Lplayer } s tprot px(lerp01(data.RetroMode01Smooth, 1, 4))

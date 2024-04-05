@@ -28,19 +28,19 @@ PrefabInstance:
         type: 3}
       propertyPath: spellColor.refVal
       value: 
-      objectReference: {fileID: 11400000, guid: f9411af795f17ba4499939b1ee32b48b,
+      objectReference: {fileID: 11400000, guid: 7b5f64215ddf3924db896587dade051d,
         type: 2}
     - target: {fileID: 2839687353931545650, guid: 567949ea02f82894482d1922e940c492,
         type: 3}
       propertyPath: nonspellColor.refVal
       value: 
-      objectReference: {fileID: 11400000, guid: 60983969f258bfd4ba0b51faf8846a65,
+      objectReference: {fileID: 11400000, guid: 90659fc2c3e9b7743b8b1e8e025f374d,
         type: 2}
     - target: {fileID: 2839687353931545650, guid: 567949ea02f82894482d1922e940c492,
         type: 3}
       propertyPath: unfilledColor.refVal
       value: 
-      objectReference: {fileID: 11400000, guid: d10d17e0a6d81c64288fb2d6eb334cfc,
+      objectReference: {fileID: 11400000, guid: 0fe65370295eac64bb79fcab4641baeb,
         type: 2}
     - target: {fileID: 2839687353931545757, guid: 567949ea02f82894482d1922e940c492,
         type: 3}
@@ -116,7 +116,7 @@ PrefabInstance:
     - target: {fileID: 2839687353931545823, guid: 567949ea02f82894482d1922e940c492,
         type: 3}
       propertyPath: m_Name
-      value: boss mima
+      value: thj13 marisa
       objectReference: {fileID: 0}
     - target: {fileID: 2839687353931545823, guid: 567949ea02f82894482d1922e940c492,
         type: 3}
@@ -261,7 +261,7 @@ PrefabInstance:
     - target: {fileID: 5738943023965476947, guid: 567949ea02f82894482d1922e940c492,
         type: 3}
       propertyPath: ID
-      value: mima
+      value: thj13.marisa
       objectReference: {fileID: 0}
     - target: {fileID: 5738943023965476947, guid: 567949ea02f82894482d1922e940c492,
         type: 3}

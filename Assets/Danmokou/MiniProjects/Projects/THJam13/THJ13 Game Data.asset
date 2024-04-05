@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8d7768018aff40589017a165e079b3c1, type: 3}
-  m_Name: THJ13 Game Data BOSS NOT SET
+  m_Name: THJ13 Game Data
   m_EditorClassIdentifier: 
   gameDefinition: {fileID: 11400000, guid: de7a6474e926ae249a453f88cd9cb2b1, type: 2}
   mainMenu: {fileID: 11400000, guid: 68a81d395f9df184fb8d689319bd1113, type: 2}
@@ -18,7 +18,10 @@ MonoBehaviour:
   unitScene: {fileID: 11400000, guid: f6d073d9562719741ac86ec620f65354, type: 2}
   defaultTransition: {fileID: 11400000, guid: 517222e0dbe56264a8bcd878fc9e4e27, type: 2}
   dialogue: []
-  bossMetadata: []
+  bossMetadata:
+  - {fileID: 11400000, guid: a7c62158d3b71d248b2a38fe28612ac0, type: 2}
+  - {fileID: 11400000, guid: a595638ff4cbf5e41bbebf6ca6cc4a42, type: 2}
+  - {fileID: 11400000, guid: 2bd1174b5ea06a049a1ff589cdddebe2, type: 2}
   tracks:
   - {fileID: 11400000, guid: d0384c9173d719446bf4ca1acaafce8e, type: 2}
   - {fileID: 11400000, guid: 21ef0f5aada9836488c0b54a161258a4, type: 2}

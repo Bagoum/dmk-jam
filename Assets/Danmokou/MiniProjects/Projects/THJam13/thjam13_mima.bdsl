@@ -1,0 +1,79 @@
+
+const var data = cfeature<THJam13CustomDataFeature>();
+
+
+function doSwitch(index::int)::StateMachine {
+	return exec b{
+		(mine<BehaviorEntity>().displayer as OneOfDisplayController).SelIndex = index
+		if (index == 1) {
+			mine<Enemy>().ReceivedDamageMult = bpy(data.RetroMode01)
+			mine<Enemy>().HealthbarOpacityFunc = bpy(data.RetroMode01Smooth)
+		} else {
+			mine<Enemy>().ReceivedDamageMult = bpy(1 - data.RetroMode01)
+			mine<Enemy>().HealthbarOpacityFunc = bpy(1 - data.RetroMode01Smooth)
+		}
+	}
+}
+
+function switchToRetro()::StateMachine {
+	return paction 0 {
+		sync "powerup1" <> poweraura { 
+			boss1(lerp 0 1 t green blue, teal) 
+		}
+		delay 1.6 effect "splurge-1" loc
+		delay 1.6 doSwitch(1)
+	}
+}
+
+var sm = pattern({
+		boss "thj13.mima"
+		mixer {
+			(1, { 
+				("thj13.stage_retro", BPY(data.RetroMode01))
+				("thj13.stage_modern", BPY(1-data.RetroMode01))
+			})
+		} 
+	}, {
+	phase 0 { } {
+		paction 0 {
+			doSwitch(0)
+			shiftphaseto 1
+		}
+	}
+	phase 30 { 
+		type spell "test spell"
+		hp 10000
+		root 0 2
+	} {
+		paction 0 {
+			sync "arrow-red/w" <> gsr {
+				times(4)
+				rv2incr(<10>)
+			} doubleflipx doubleflipy s tprot px select(dc, {
+				code(0 + t)
+				code(2 + t)
+				code(4 + t)
+			})
+			
+			async "gpather-teal/w" <> gcr {
+				root cxy 0 -1
+			} pather 7 7 nroffset 
+				lerpmany  {
+					(code(0), code(cxy -2.7 -2.1))
+					(code(1), code(cxy -1.3 0.5))
+					(code(2), code(cxy 0.9 0.9))
+					(code(3), code(cxy 1 2.7))
+					(code(4), code(cxy -0.1 4))
+					(code(5), code(cxy -2.6 2.5))
+					(code(6), code(cxy -4.6 3.7))
+					(code(7), code(cxy -2 5.5))
+					(code(7.1), code((cxy(-2, 5.5) + py(t - 7))))
+				} t { }
+			delay 4 switchToRetro()
+			
+			@ "mima" 
+				print("hello")
+		}
+	}
+})
+sm;

@@ -1,0 +1,47 @@
+
+const var data = cfeature<THJam13CustomDataFeature>();
+const var me = "thj13.marisa";
+const var other = "thj13.marisa-retro";
+
+var sm = pattern({
+		bosses({"thj13.marisa", other}, {(1, 0)})
+		mixer {
+			(1, { 
+				("thj13.stage_retro", BPY(data.RetroMode01))
+				("thj13.stage_modern", BPY(1-data.RetroMode01))
+			})
+		} 
+	}, {
+	phase 0 { } {
+		paction 0 {
+			exec b{
+				mine<Enemy>().ReceivedDamageMult = bpy(1-data.RetroMode01)
+				mine<Enemy>().HealthbarOpacityFunc = bpy(1-data.RetroMode01Smooth)
+			}
+			@ other
+				exec b{
+					mine<Enemy>().ReceivedDamageMult = bpy(data.RetroMode01)
+					mine<Enemy>().HealthbarOpacityFunc = bpy(data.RetroMode01Smooth)
+				}
+			@ other
+				diverthp(fromid(me))
+			shiftphaseto 1
+		}
+	}
+	phase 30 { 
+		type spell "test spell"
+		hp 10000
+		root 2 2
+		rootother other -2 2
+	} {
+		paction 0 {
+			@ other
+				async "lstar-red/w" <> gcr2 30 inf <20h> {
+				} gsr2c 6 {
+				} simple tprot cx 2 {
+					dir starrotb1
+				}
+		}
+	}
+})
+sm;

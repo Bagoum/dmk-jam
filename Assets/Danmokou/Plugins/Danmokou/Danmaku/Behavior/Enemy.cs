@@ -56,7 +56,7 @@ public class Enemy : RegularUpdater, IBehaviorEntityDependent,
     public bool takesBossDamage;
     private (bool _, Enemy to)? divertHP = null;
     public (BulletManager.StyleSelector sel, bool exclude)? VulnerableStyles { get; private set; }
-    public BPY? ReceivedDamageMult { get; private set; }
+    public BPY? ReceivedDamageMult { get; set; }
     public double HP { get; private set; }
     public int maxHP = 1000;
     public int PhotoHP { get; private set; } = 1;
@@ -119,7 +119,7 @@ public class Enemy : RegularUpdater, IBehaviorEntityDependent,
 
     [ReflectInto(typeof(BPY))]
     public string healthbarOpacity = "1";
-    private BPY healthbarOpacityFunc = null!;
+    public BPY HealthbarOpacityFunc { get; set; } = null!;
 
     public RColor2 nonspellColor = null!;
     public RColor2 spellColor = null!;
@@ -194,8 +194,8 @@ public class Enemy : RegularUpdater, IBehaviorEntityDependent,
         if (healthbarSprite != null) {
             healthbarSprite.enabled = true;
             healthbarSprite.GetPropertyBlock(hpPB);
-            healthbarOpacityFunc = ReflWrap<BPY>.Wrap(healthbarOpacity);
-            hpPB.SetFloat(PropConsts.alpha, healthbarOpacityFunc(Beh.BPI));
+            HealthbarOpacityFunc = ReflWrap<BPY>.Wrap(healthbarOpacity);
+            hpPB.SetFloat(PropConsts.alpha, HealthbarOpacityFunc(Beh.BPI));
             hpPB.SetFloat(PropConsts.radius, hpRadius);
             hpPB.SetFloat(PropConsts.subradius, hpThickness);
             healthbarStart = 0f;
@@ -319,7 +319,13 @@ public class Enemy : RegularUpdater, IBehaviorEntityDependent,
         RecheckGraphicsSettings();
     }
 
-    public void DivertHP(Enemy to) => divertHP = (false, to);
+    public void DivertHP(Enemy to) {
+        if (to == this)
+            divertHP = null;
+        else
+            divertHP = (false, to);
+    }
+
     private float HPRatio => (float)(HP / maxHP);
     private float PhotoRatio => (float) PhotoHP / maxPhotoHP;
     private float BarRatio => Math.Min(PhotoRatio, HPRatio);
@@ -399,7 +405,7 @@ public class Enemy : RegularUpdater, IBehaviorEntityDependent,
             labelAccDmg = 0;
         }
         if (healthbarSprite != null) {
-            hpPB.SetFloat(PropConsts.alpha, healthbarOpacityFunc(Beh.BPI));
+            hpPB.SetFloat(PropConsts.alpha, HealthbarOpacityFunc(Beh.BPI));
             hpPB.SetFloat(PropConsts.fillRatio, DisplayBarRatio);
             hpPB.SetColor(PropConsts.fillColor, HPColor);
             hpPB.SetFloat(PropConsts.time, Beh.rBPI.t);

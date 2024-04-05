@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8c3d462728373fa4db771cd7986b7536, type: 3}
   m_Name: Audio THJ13 Stage Retro
   m_EditorClassIdentifier: 
-  clip: {fileID: 8300000, guid: 8d0c8930a555d9447b1982a2aa417c08, type: 3}
+  clip: {fileID: 8300000, guid: fb605e0ce37ce0b4394f580b29568003, type: 3}
   key: thj13.stage_retro
   trackPlayLocation: 
   title: stager etro
@@ -22,9 +22,9 @@ MonoBehaviour:
     hardcoded:
       en: 
       jp: 
-  volume: 0.24
+  volume: 0.14
   pitch: 1
-  loopMode: 2
+  loopMode: 1
   loopSeconds: {x: 5, y: 29.76}
   startWithTime: 0
   musicRoomRequirement: 

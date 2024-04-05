@@ -148,6 +148,14 @@ t > fadein ?
         });
     }
 
+    public static ReflectableLASM Effect(string effect, GCXF<Vector2> loc) {
+        var eff = ResourceManager.GetEffect(effect);
+        return new(smh => {
+            eff.Proc(loc(smh.GCX));
+            return Task.CompletedTask;
+        });
+    }
+
     #region ScreenManip
     
     /// <summary>

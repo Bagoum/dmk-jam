@@ -130,7 +130,7 @@ public partial class PlayerController : BehaviorEntity,
     /// </summary>
     public bool ReceivesBulletCollisions(string? style) =>
         State != PlayerState.RESPAWN &&
-            (style is null || CollisionsForPool.Value is not {} coll ||
+            (style is null or BulletManager.BulletFlakeName || CollisionsForPool.Value is not {} coll ||
              coll.sel.Matches(style) != coll.exclude);
 
     /// <summary>
@@ -212,6 +212,7 @@ public partial class PlayerController : BehaviorEntity,
     private readonly PushLerper<Color> meterDisplay = new(0.4f, Color.Lerp);
     private readonly PushLerper<Color> meterDisplayInner = new(0.4f, Color.Lerp);
     private readonly PushLerper<Color> meterDisplayShadow = new(0.4f, Color.Lerp);
+    private readonly PushLerper<float> meterDisplayOpacity = new(0.1f);
     
     #endregion
 
@@ -228,7 +229,8 @@ public partial class PlayerController : BehaviorEntity,
         Team = GameManagement.Instance.GetOrSetTeam(new ActiveTeamConfig(new TeamConfig(0, defaultSubshot, dfltTeams)));
         Logs.Log($"Team awake", level: LogLevel.DEBUG1);
         hitboxSprite.enabled = SaveData.s.UnfocusedHitbox;
-        meter.enabled = false;
+        meter.enabled = true;
+        meterDisplayOpacity.Push(0);
         
         var initialPosition = tr.position;
         PastPositions.Add(initialPosition);
@@ -266,6 +268,7 @@ public partial class PlayerController : BehaviorEntity,
 
     protected override void BindListeners() {
         base.BindListeners();
+        Listen(meterDisplayOpacity, op => meter.color = meter.color.WithA(op));
         RegisterService<PlayerController>(this);
         RegisterService<IEnemySimpleBulletCollisionReceiver>(this);
         RegisterService<IEnemyPatherCollisionReceiver>(this);
@@ -296,7 +299,6 @@ public partial class PlayerController : BehaviorEntity,
             didUpdate = true;
         }
         if (didUpdate || force) {
-            Logs.Log("Updating team");
             RealizeTeam();
             Instance.TeamUpdated.OnNext(default);
         }
@@ -371,7 +373,7 @@ public partial class PlayerController : BehaviorEntity,
     }
 
     #endregion
-    private void SetLocation(Vector2 next) {
+    public void SetLocation(Vector2 next) {
         bpi.loc = tr.position = next;
         Hurtbox = new(next, Hurtbox.radius, Hurtbox.grazeRadius);
         LocationHelpers.UpdatePlayerLocation(next, next);
@@ -456,8 +458,15 @@ public partial class PlayerController : BehaviorEntity,
         if (AllControlEnabled) 
             Instance.UpdatePlayerFrame(State);
         if (AllowPlayerInput) {
-            if (InputManager.IsSwap) 
-                UpdateTeam((Team.SelectedIndex + 1) % Team.Ships.Length);
+            if (InputManager.IsSwap) {
+                var meterReq = Instance.MeterF.MeterForSwap;
+                if (Instance.MeterF.TryConsumeMeterDiscrete(meterReq)) {
+                    UpdateTeam((Team.SelectedIndex + 1) % Team.Ships.Length);
+                } else
+                    PlayerMeterFailed.OnNext(default);
+                if (meterReq > 0)
+                    RunDroppableRIEnumerator(ShowMeterDisplay(0.5f, Cancellable.Null));
+            }
             
         }
         for (int ii = 0; ii < grazeCooldowns.Keys.Count; ++ii)
@@ -492,6 +501,7 @@ public partial class PlayerController : BehaviorEntity,
         meterDisplay.Update(ETime.FRAME_TIME);
         meterDisplayShadow.Update(ETime.FRAME_TIME);
         meterDisplayInner.Update(ETime.FRAME_TIME);
+        meterDisplayOpacity.Update(ETime.FRAME_TIME);
         UpdatePB();
     }
     
@@ -754,9 +764,12 @@ public partial class PlayerController : BehaviorEntity,
         State = PlayerState.NORMAL;
         while (true) {
             if (MaybeCancelState(cT)) yield break;
-            if (IsTryingWitchTime && GameManagement.Instance.MeterF.TryStartMeter() is {} meterToken) {
-                RunDroppableRIEnumerator(StateWitchTime(cT, meterToken));
-                yield break;
+            if (IsTryingWitchTime) {
+                if (GameManagement.Instance.MeterF.TryStartMeter() is { } meterToken) {
+                    RunDroppableRIEnumerator(StateWitchTime(cT, meterToken));
+                    yield break;
+                } else
+                    PlayerMeterFailed.OnNext(default);
             }
             yield return null;
         }
@@ -795,22 +808,31 @@ public partial class PlayerController : BehaviorEntity,
         speedLines.Play();
         using var t = ETime.Slowdown.AddConst(WitchTimeSlowdown);
         using var _mt = meterToken;
-        meter.enabled = true;
+        var displayCt = new Cancellable();
+        RunDroppableRIEnumerator(ShowMeterDisplay(null, displayCt, 0.25f));
         PlayerActivatedMeter.OnNext(default);
         for (int f = 0; !MaybeCancelState(cT) &&
             IsTryingWitchTime && Instance.MeterF.TryUseMeterFrame(); ++f) {
             SpawnedShip.MaybeDrawWitchTimeGhost(f);
             MeterIsActive.OnNext(Instance.MeterF.EnoughMeterToUse ? meterDisplay : meterDisplayInner);
-            float meterDisplayRatio = Easers.EOutSine(Mathf.Clamp01(f / 30f));
-            meterPB.SetFloat(PropConsts.fillRatio, Instance.MeterF.VisibleMeter.Value * meterDisplayRatio);
-            meter.SetPropertyBlock(meterPB);
             yield return null;
         }
-        meter.enabled = false;
+        displayCt.Cancel();
         PlayerDeactivatedMeter.OnNext(default);
         speedLines.Stop();
         //MaybeCancelState already run in the for loop
         if (!cT.Cancelled(out _)) RunDroppableRIEnumerator(StateNormal(cT));
+    }
+
+    private IEnumerator ShowMeterDisplay(float? maxTime, ICancellee cT, float fadeInOver=0) {
+        meterDisplayOpacity.Push(1);
+        for (float t = 0; t < (maxTime ?? float.PositiveInfinity) && !cT.Cancelled; t += ETime.FRAME_TIME) {
+            float meterDisplayRatio = fadeInOver <= 0 ? 1 : Easers.EOutSine(Mathf.Clamp01(t / fadeInOver));
+            meterPB.SetFloat(PropConsts.fillRatio, Instance.MeterF.VisibleMeter.Value * meterDisplayRatio);
+            meter.SetPropertyBlock(meterPB);
+            yield return null;
+        }
+        meterDisplayOpacity.Push(0);
     }
     
     

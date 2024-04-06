@@ -345,6 +345,7 @@ MonoBehaviour:
   meterUsable: {fileID: 11400000, guid: 231215c84b23c4b4583e96504e246217, type: 2}
   meterActivated: {fileID: 11400000, guid: 9ad1892b93a0ea34f986b224656664a9, type: 2}
   meterDeActivated: {fileID: 11400000, guid: a142a99862f499746b6e7ef08f56f910, type: 2}
+  meterUseFail: {fileID: 11400000, guid: 0288ed3be0da62b4d98ab7cbc53a08e3, type: 2}
   swapHPScore: {fileID: 11400000, guid: ec75cb7ac0342f9489ad6e5610810bfc, type: 2}
   flakeItemCollected: {fileID: 11400000, guid: 8a0c14d7b69e7874dbf2fc43ba5bb467, type: 2}
   rankUp: {fileID: 0}

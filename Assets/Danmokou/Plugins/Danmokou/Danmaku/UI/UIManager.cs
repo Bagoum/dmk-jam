@@ -372,8 +372,11 @@ public class UIManager : CoroutineRegularUpdater, IUIManager, IStageAnnouncer {
         }
         spellnameText.text = title ?? "";
         spellnameController?.Cancel();
-        RunDroppableRIEnumerator(FadeSpellname(spellnameFadeIn, spellColorTransparent, spellColor, 
-            spellnameController = new Cancellable()));
+        Run(FadeSpellname(spellnameFadeIn, spellColorTransparent, spellColor, 
+            spellnameController = new Cancellable()), new() {
+            Droppable = true,
+            ExecType = CoroutineType.StepTryPrepend
+        });
     }
 
     public Material bossColorizer = null!;

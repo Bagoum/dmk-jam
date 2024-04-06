@@ -54,7 +54,7 @@ public class Enemy : RegularUpdater, IBehaviorEntityDependent,
     public BehaviorEntity Beh { get; private set; } = null!;
     public Vector2 Location => Beh.Location;
     public bool takesBossDamage;
-    private (bool _, Enemy to)? divertHP = null;
+    private Maybe<Enemy> divertHP = Maybe<Enemy>.None;
     public (BulletManager.StyleSelector sel, bool exclude)? VulnerableStyles { get; private set; }
     public BPY? ReceivedDamageMult { get; set; }
     public double HP { get; private set; }
@@ -65,8 +65,10 @@ public class Enemy : RegularUpdater, IBehaviorEntityDependent,
     //public bool Vulnerable { get; private set; }= true;
 
     private Vulnerability _vulnerable;
-    public Vulnerability Vulnerable => (_vulnerable is Vulnerability.VULNERABLE && receivedDamageMult <= 0) 
-        ? Vulnerability.PASS_THROUGH : _vulnerable;
+    public Vulnerability Vulnerable(bool bypassDamageMult = false) => 
+        (!bypassDamageMult && receivedDamageMult <= 0) 
+        ? Vulnerability.PASS_THROUGH : 
+        _vulnerable;
     //Updated every frame based on Vulnerability
     private bool receivesBulletCollisions;
     private double receivedDamageMult;
@@ -320,19 +322,16 @@ public class Enemy : RegularUpdater, IBehaviorEntityDependent,
     }
 
     public void DivertHP(Enemy to) {
-        if (to == this)
-            divertHP = null;
-        else
-            divertHP = (false, to);
+        divertHP = to == this ? Maybe<Enemy>.None : to;
     }
 
     private float HPRatio => (float)(HP / maxHP);
     private float PhotoRatio => (float) PhotoHP / maxPhotoHP;
     private float BarRatio => Math.Min(PhotoRatio, HPRatio);
     [UsedImplicitly]
-    public float EffectiveBarRatio => divertHP?.to.EffectiveBarRatio ?? BarRatio;
+    public float EffectiveBarRatio => divertHP.Try(out var d) ? d.EffectiveBarRatio : BarRatio;
     private float _displayBarRatio;
-    public float DisplayBarRatio => divertHP?.to.DisplayBarRatio ?? _displayBarRatio;
+    public float DisplayBarRatio => divertHP.Try(out var d) ? d.DisplayBarRatio : _displayBarRatio;
 
     private Color HPColor => currPhaseType == PhaseType.Timeout ?
             unfilledColor :
@@ -344,7 +343,7 @@ public class Enemy : RegularUpdater, IBehaviorEntityDependent,
     public override void RegularUpdate() {
         receivedDamageMult = ReceivedDamageMult?.Invoke(Beh.rBPI) ?? 1;
         receivesBulletCollisions =
-            LocationHelpers.OnPlayableScreen(Beh.GlobalPosition()) && Vulnerable.HitsLand();
+            LocationHelpers.OnPlayableScreenBy(-0.3f, Beh.GlobalPosition()) && Vulnerable().HitsLand();
         _displayBarRatio = M.Lerp(_displayBarRatio, BarRatio, HPLerpRate * ETime.FRAME_TIME);
         if (hasDistorter) {
             distortPB.SetFloat(PropConsts.time, Beh.rBPI.t);
@@ -418,7 +417,7 @@ public class Enemy : RegularUpdater, IBehaviorEntityDependent,
         orderedEnemies.Compact();
         for (int ii = 0; ii < orderedEnemies.Count; ++ii) {
             var enemy = orderedEnemies[ii];
-            if (LocationHelpers.OnPlayableScreen(enemy.Beh.GlobalPosition()) && enemy.Vulnerable.HitsLand()) {
+            if (LocationHelpers.OnPlayableScreen(enemy.Beh.GlobalPosition()) && enemy.Vulnerable().HitsLand()) {
                 frozenEnemies.Add(new FrozenCollisionInfo(enemy));
             }
         }
@@ -461,26 +460,39 @@ public class Enemy : RegularUpdater, IBehaviorEntityDependent,
     public void QueuePlayerDamage(int bossDmg, int stageDmg, PlayerController firer) => 
         QueuePlayerDamage(takesBossDamage ? bossDmg : stageDmg, firer);
 
-    private void QueuePlayerDamage(int dmg, PlayerController firer) {
-        if (divertHP != null) {
-            divertHP.Value.to.QueuePlayerDamage(dmg, firer);
-            return;
+    private double QueuePlayerDamage(double dmg, PlayerController firer, bool bypassDamageMult = false, bool addToLabel = true) {
+        if (!Vulnerable(bypassDamageMult).TakesDamage()) return 0;
+        if (!bypassDamageMult)
+            dmg *= receivedDamageMult;
+        if (dmg <= 0)
+            return 0;
+        if (divertHP.Try(out var divert)) {
+            var divertedDmg = divert.QueuePlayerDamage(dmg, firer, true, false);
+            if (addToLabel)
+                AddDmgToLabel(divertedDmg);
+            return divertedDmg;
         }
-        if (!Vulnerable.TakesDamage()) return;
         float dstToFirer = (firer.Location - Beh.rBPI.LocV2).magnitude;
         float shotgun = (SHOTGUN_MIN - dstToFirer) / (SHOTGUN_MIN - SHOTGUN_MAX);
         double multiplier = GameManagement.Instance.PlayerDamageMultiplier *
                             M.Lerp(0, 1, shotgun, 1, SHOTGUN_MULTIPLIER);
-        queuedDamage += dmg * multiplier * GameManagement.Difficulty.playerDamageMod;
+        dmg *= multiplier * GameManagement.Difficulty.playerDamageMod;
+        queuedDamage += dmg;
+        if (addToLabel)
+            AddDmgToLabel(queuedDamage);
         Counter.DoShotgun(shotgun);
+        return queuedDamage;
     }
+
+    private void AddDmgToLabel(double dmg) {
+        labelAccDmg += (long)dmg;
+        if (dmgLabelBuffer <= 0) dmgLabelBuffer = DMG_LABEL_BUFFER;
+    }
+    
     private void PollDamage() {
-        if (!Vulnerable.TakesDamage()) queuedDamage = 0;
-        queuedDamage *= ReceivedDamageMult?.Invoke(Beh.rBPI) ?? 1;
+        if (!Vulnerable(true).TakesDamage()) queuedDamage = 0;
         if (queuedDamage < 1) return;
         HP = M.Clamp(0f, maxHP, HP - queuedDamage);
-        labelAccDmg += (long)queuedDamage;
-        if (dmgLabelBuffer <= 0) dmgLabelBuffer = DMG_LABEL_BUFFER;
         queuedDamage = 0;
         if (HP <= 0) {
             Beh.OutOfHP();
@@ -572,7 +584,7 @@ public class Enemy : RegularUpdater, IBehaviorEntityDependent,
     public void ProcOnHit(EffectStrategy effect, Vector2 hitLoc) => effect.Proc(hitLoc, Beh.GlobalPosition(), collisionRadius);
 
     private bool ViewfinderHits(CRect viewfinder) => 
-        Vulnerable.TakesDamage() && ayaCameraRadius != null && 
+        Vulnerable().TakesDamage() && ayaCameraRadius != null && 
         CollisionMath.CircleInRect(Beh.rBPI.loc.x, Beh.rBPI.loc.y, ayaCameraRadius, viewfinder);
     public void ShowCrosshairIfViewfinderHits(CRect viewfinder) {
         if (cameraCrosshair != null) {

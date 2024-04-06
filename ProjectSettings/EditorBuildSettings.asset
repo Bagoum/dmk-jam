@@ -5,7 +5,7 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 1
+  - enabled: 0
     path: Assets/SiMP/Scenes/Working Scene.unity
     guid: 2cda990e2423bbf4892e6590ba056729
   - enabled: 0
@@ -28,8 +28,14 @@ EditorBuildSettings:
     path: Assets/SiMP/Scenes/SiMP.MainMenu.unity
     guid: 6b2d775f9661bd44da76415034461224
   - enabled: 1
+    path: Assets/Danmokou/MiniProjects/Projects/THJam13/THJ13 Main Menu.unity
+    guid: e72612d42895c6d4e98ae9a2131ce97f
+  - enabled: 0
     path: Assets/Danmokou/MiniProjects/MP.MainMenu.unity
     guid: 6ce87ca5eeaeca643beda1e510b20d3b
+  - enabled: 1
+    path: Assets/Danmokou/MiniProjects/Projects/THJam13/THJ13 Level.unity
+    guid: b1c73dafd54d71d4485949d0958807c9
   - enabled: 0
     path: Assets/Danmokou/MiniProjects/Projects/ReimuTheBoomer/WP MainMenu VN.unity
     guid: 5504889f1c92e2f4b85b1da709eed33c
@@ -48,7 +54,7 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Danmokou/MiniProjects/Scenes/MiniprojectLevel VN.unity
     guid: bbf652916aa38874a9909ebe7e057289
-  - enabled: 1
+  - enabled: 0
     path: Assets/Danmokou/MiniProjects/Scenes/MiniprojectLevel.unity
     guid: 2a1f4e4cd49e99341855fa916af2cc1f
   - enabled: 1

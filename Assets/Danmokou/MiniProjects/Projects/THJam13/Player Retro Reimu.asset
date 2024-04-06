@@ -20,20 +20,22 @@ MonoBehaviour:
   grazeboxRadius: 0.42
   itemCollectRadius: 0.2
   itemAttractRadius: 1
-  key: modern-reimu
+  key: retro-reimu
   shortTitle:
     useReference: 1
     reference: players.reimu
     hardcoded:
       en: 
       jp: 
-  prefab: {fileID: 2884352696324497640, guid: fde376048de61e241998f004239cd358, type: 3}
+  prefab: {fileID: 8820472632378600083, guid: e44f0bae91463ea4e9c15b0947d87a9d, type: 3}
   shots2:
   - ordinal: A
-    shot: {fileID: 11400000, guid: e89357d08e40831458970df574a4eb13, type: 2}
+    shot: {fileID: 11400000, guid: 229f847abcf377b49a7fa3c1d58152c0, type: 2}
   supports:
   - ordinal: Bomb 1
     ability: {fileID: 11400000, guid: 3a0c5b4cb7a173245835d11e28585c65, type: 2}
+  - ordinal: Witch Time
+    ability: {fileID: 11400000, guid: 13157d81a8a5ff646accca16a0311ad8, type: 2}
   uiColor: {r: 0.6509434, g: 0, b: 0.046450462, a: 1}
   shotDisplay: {fileID: 8782343778102116289, guid: 37d24709e73ba524a90e1680f96f3f3f,
     type: 3}

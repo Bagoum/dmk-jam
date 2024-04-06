@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 13762918244a65249ab50d0bb376f974, type: 3}
   m_Name: BossColor THJ13.Marisa
   m_EditorClassIdentifier: 
-  uiColor: {r: 0.9150943, g: 0.80740494, b: 0.13812745, a: 1}
+  uiColor: {r: 0.8537736, g: 0.6445769, b: 0.0926264, a: 1}
   uiHPColor: {r: 0.9669811, g: 0.70927626, b: 0.21893913, a: 1}
   powerAuraColor: {r: 0.9528302, g: 0.9528302, b: 0.9528302, a: 1}
   cardColorR: {r: 0.9622642, g: 0.9622642, b: 0.9622642, a: 1}

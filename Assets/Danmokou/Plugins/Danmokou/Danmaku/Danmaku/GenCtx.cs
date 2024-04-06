@@ -40,8 +40,11 @@ public class GenCtx : IDisposable {
         get => _i;
         set {
             _i = value;
-            if (AutoVars is AutoVars.GenCtx g)
+            if (AutoVars is AutoVars.GenCtx g) {
                 EnvFrame.Value<float>(g.i) = value;
+                var times = EnvFrame.Value<float>(g.times);
+                EnvFrame.Value<float>(g.ir) = times > 1 ? value / (times - 1) : 0;
+            }
         }
     }
     

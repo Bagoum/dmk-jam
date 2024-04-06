@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c723752e85ec4814982d951851552c07, type: 3}
   m_Name: THJ13 Miniproject Stage
   m_EditorClassIdentifier: 
-  sceneConfig: {fileID: 11400000, guid: b574619c836d17447b02cb425c0f3bb8, type: 2}
+  sceneConfig: {fileID: 11400000, guid: fb6811f8f13e03f409cdc6a5ab285d5a, type: 2}
   stateMachine: {fileID: 2811297602134710623, guid: e148e3949690c3b48a123723422a3a98,
     type: 3}
   description: 

@@ -117,6 +117,7 @@ public static class VNFlappyBird {
         using var t = vn.Add(new Tokiko());
         s.LocalLocation.Value = new(-3f, 0, 0);
         t.LocalLocation.Value = new(3f, 0, 0);
+        
         await vn.Sequential(
             s.SayC("Good afternoon. Is this the so-called Kourindou?"),
             t.SayC("That's right. Are you looking for something?"),

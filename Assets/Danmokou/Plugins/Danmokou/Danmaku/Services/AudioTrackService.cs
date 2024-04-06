@@ -32,9 +32,15 @@ public readonly struct BGMInvokeFlags {
 public interface IAudioTrackService {
     void ClearRunningBGM(BGMInvokeFlags? flags = null);
     IAudioTrackInfo? FindTrack(string? trackName);
-    AudioTrackSet? FindTrackset(string? track) =>
-        FindTrackset(FindTrack(track));
-    AudioTrackSet? FindTrackset(IAudioTrackInfo? track);
+    
+    /// <inheritdoc cref="FindTrackset(System.Collections.Generic.IEnumerable{string?})"/>
+    AudioTrackSet? FindTrackset(IEnumerable<string?> tracks) =>
+        FindTrackset(tracks.Select(FindTrack).ToArray());
+    
+    /// <summary>
+    /// Find an existing trackset which has all the provided tracks.
+    /// </summary>
+    AudioTrackSet? FindTrackset(IAudioTrackInfo?[] tracks);
     AudioTrackSet AddTrackset(BGMInvokeFlags? flags = null, PIData? pi = null, ICancellee? cT = null);
 }
 public class AudioTrackService : CoroutineRegularUpdater, IAudioTrackService {
@@ -96,10 +102,13 @@ public class AudioTrackService : CoroutineRegularUpdater, IAudioTrackService {
         return null;
     }
 
-    public AudioTrackSet? FindTrackset(IAudioTrackInfo? track) {
+    public AudioTrackSet? FindTrackset(IAudioTrackInfo?[] tracks) {
         for (var n = bgm.Last; n != null; n = n.Previous) {
-            if (n.Value.HasTrack(track, out _))
-                return n.Value;
+            for (int ii = 0; ii < tracks.Length; ++ii)
+                if (!n.Value.HasTrack(tracks[ii], out _))
+                    goto next;
+            return n.Value;
+            next: ;
         }
         return null;
     }

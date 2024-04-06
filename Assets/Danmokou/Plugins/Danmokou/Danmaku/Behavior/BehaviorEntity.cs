@@ -384,15 +384,12 @@ public partial class BehaviorEntity : Pooled<BehaviorEntity>, ITransformHandler 
 
     /// <summary>
     /// Call this from hp-management scripts when you are out of HP.
-    /// Returns True iff the BEH is now going to cull.
     /// </summary>
     public void OutOfHP() {
         if (PhaseShifter != null) {
             ShiftPhase();
-            //return false;
         } else {
             Poof(true);
-            //return true;
         }
     }
 

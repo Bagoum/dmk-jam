@@ -884,7 +884,10 @@ public abstract record ST(PositionRange Position) : IDebugPrint {
         protected override IAST _AnnotateInner(STAnnotater ann) {
             bool hoist = Kw.Content == "hfunction";
             var localScope = LexicalScope.Derive(hoist ? ann.Scope.HoistedScope : ann.Scope);
-            localScope.Type = LexicalScopeType.ExpressionEF;
+            //There isn't a special scope type for functions, but they're basically standard scopes.
+            //Even though they are ultimately compiled to expressions, the context in which they are run
+            // is closest to standard scopes, and not comparable to the delayed execution of GCXF (ExpressionEF type).
+            localScope.Type = LexicalScopeType.Standard;
             localScope.IsConstScope = ConstKwPos != null;
             var krt = Parser.TypeFromToken(ReturnType, ann.Scope, allowVoid:true);
             if (!krt.TryL(out var retTyp))

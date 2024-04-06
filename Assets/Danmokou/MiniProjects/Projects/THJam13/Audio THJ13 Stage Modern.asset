@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8c3d462728373fa4db771cd7986b7536, type: 3}
   m_Name: Audio THJ13 Stage Modern
   m_EditorClassIdentifier: 
-  clip: {fileID: 8300000, guid: 8b12e6074dd1b97429555004306b6386, type: 3}
+  clip: {fileID: 8300000, guid: f0a54d4946822e543a31dd3d4662e4e4, type: 3}
   key: thj13.stage_modern
   trackPlayLocation: 
   title: stage modern
@@ -22,10 +22,10 @@ MonoBehaviour:
     hardcoded:
       en: 
       jp: 
-  volume: 0.14
+  volume: 0.3
   pitch: 1
-  loopMode: 1
-  loopSeconds: {x: 39.48, y: 175.815}
+  loopMode: 2
+  loopSeconds: {x: 0, y: 163}
   startWithTime: 0
   musicRoomRequirement: 
   showInMusicRoom: 0

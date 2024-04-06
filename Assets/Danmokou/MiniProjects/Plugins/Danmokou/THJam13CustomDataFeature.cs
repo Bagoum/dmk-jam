@@ -37,7 +37,7 @@ public class THJam13CustomDataFeature : BaseInstanceFeature, ICustomDataFeature,
             RetroMode01SmoothEv.PushIfNotSame(retro ? 1 : 0);
             ServiceLocator.MaybeFind<IShaderCamera>().ValueOrNull()?.ShowPixelation(
                 new(2f, _ => LocationHelpers.TruePlayerLocation, pi => 16 * pi.t, 
-                    retro ? pi => BMath.Lerp(400, 640, pi.t/2f) : null, retro));
+                    retro ? pi => BMath.Lerp(640, 960, pi.t/2f) : null, retro));
         }));
         PlayerVulnEv = RetroModeEv.Select(retro => (Vuln, !retro) as (BulletManager.StyleSelector, bool)?);
         Tokens.Add(PlayerController.CollisionsForPool.AddDisturbance(PlayerVulnEv));
